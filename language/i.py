@@ -1,7 +1,7 @@
 #-*- encoding: utf-8 -*-
 
 import sys
-#import time
+import time
 
 """
 I - ナップサック問題
@@ -14,35 +14,55 @@ W = nw[1]
 
 nws = [ map( int, raw_input().split()) for _ in xrange( N ) ]
 
-max_value = 0
-ws = []
-#vs = []
-( wl, wr )  = ( 0, 0 )
-#( vl, vr )  = ( 0, 0 )
+start = time.clock()
 
-for i in xrange( N ):
-    sub_value = 0
-    for j in xrange( N ):
-        if i == 0:
-            wr = 0
+print ( N, W )
+if N <=30 and W > 1000:
+#elif N > 30 and W <=1000:
+    print "N <= 30 and W > 1000"
+
+    # memo
+    memo = []
+
+    def rec( i, j ):
+        res = dict()
+        if len( memo ) < i+1:
+            memo.append( res )
         else:
-            wr = ws[i-1][j]
-        if j == 0:
-            wl = 0
+            res = memo[i]
+
+        if i == N:
+            res[j] = 0
+        elif j in memo[i]:
+            res[j] = memo[i][j]
+        elif j < nws[i][1]:
+            res[j] = rec( i+1, j )
         else:
-            wl = ws[i][j-1]
-        if nws[j] + wr + wl > W:
-            break
+            res[j] = max( rec( i+1, j ),
+                       rec( i+1, j-nws[i][1] ) + nws[i][0] )
+        memo[i] = res
+        return res[j]
 
-        ws[i][j] = nws[j][1] + wr + wl
+    print ( rec( 0, W ) )
 
-        sub_value += nws[j][0]
+else:
+    print "N > 30 or W <= 1000"
 
-    max_value = max( max_value, sub_value )
+    # memo
+    memo = [ [ 0 for _ in xrange( W+1 ) ] for _ in xrange( N+1 ) ]
+
+    for i in xrange( N-1, -1, -1 ):
+        for j in xrange( W+1 ):
+            if j < nws[i][1]:
+                memo[i][j] = memo[i+1][j]
+            else:
+                memo[i][j] = max( memo[i+1][j], memo[i+1][j - nws[i][1]] + nws[i][0] )
+
+    print ( memo[0][W] )
 
 
-#end = time.clock()
-#print( end - start )
+end = time.clock()
+print( end - start )
 
 
 sys.exit(0)
